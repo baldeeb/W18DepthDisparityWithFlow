@@ -1,0 +1,36 @@
+Some references:
+  (I suspect the ICRA-05 paper is the best of the bunch.)
+
+@InProceedings{Campbell-icra-05,
+  author =       {J. Campbell and R. Sukthankar and I. Nourbakhsh and A. Pahwa},
+  title =        {A robus visual odometry and precipice detection system
+                  using consumer-grade monocular vision},
+  booktitle = ICRA,
+  year =         2005}
+
+@InProceedings{Ulrich-icra-00,
+  author =       {I. Ulrich and I. Nourbakhsh},
+  title =        {Appearance-based place recognition for topological localization},
+  booktitle =    ICRA,
+  pages =        {1023-1029},
+  year =         2000,
+  publisher =    IEEE
+}
+
+@InProceedings{Ulrich-aaai-00,
+  author =       {I. Ulrich and I. Nourbakhsh},
+  title =        {Appearance-based obstacle detection with monocular color vision},
+  booktitle =    AAAI00,
+  pages =        {866--871},
+  year =         2000,
+  publisher =    AAAI-MITP
+}
+
+@Article{Nourbakhsh-jras-97,
+  author =       {I. R. Nourbakhsh and D. Andre and C. Tomasi and M. R. Genesereth},
+  title =        {Mobile robot obstacle avoidance via depth from focus},
+  journal =      {Robotics and Autonomous Systems},
+  year =         1997,
+  volume =       22,
+  pages =        {151--158}
+}
