@@ -1,0 +1,34 @@
+
+CAMBELL2005
+
+OPTICAL FLOW
+- Do we need to account for optical flow?
+	- How would it impare our ability to identify drop-offs?
+	- How fast is the robot and how much would it's motion cause that?
+	- How much would the camer's ability speed void the effect of that?
+	- https://docs.opencv.org/3.3.1/d7/d8b/tutorial_py_lucas_kanade.html
+
+- optical flow can be use to exclude non drop-offs and narrow down the data set. 
+
+
+COMPARING TO OTHERS
+"In contrast to traditional obstacle-
+detection techniques, we do not recover a depth map of the
+scene, nor do we rely on the reflectance properties of obsta-
+cles"
+
+HOW THE PAPER IDENTIFIES PRECIPISE
+This paper inloys the difference in optical flow vectors with proximity to determine which objects are not part of the grownd plane. 
+To do so the writers split the image into segments and compare the average length of their optical flow vectors. If there is difference between one patch's average optical flow and its neighbors' it is flaged as a hazard or "precipice"
+
+
+
+----------------------------------------------------------
+
+TAI2016
+
+TITLE: A Deep-Network Solution Towards Model-less Obstacle Avoidance
+
+Paper that uses NNs to identiry terrain:
+"D. Maturana et. al proposed an autonomous UAV landing system, where
+deep-learning is only used to classify the terrain [2]"
