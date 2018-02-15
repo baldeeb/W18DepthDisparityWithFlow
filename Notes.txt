@@ -25,10 +25,29 @@ To do so the writers split the image into segments and compare the average lengt
 
 ----------------------------------------------------------
 
-TAI2016
+TAI2016			- 		FINISH READING!
 
 TITLE: A Deep-Network Solution Towards Model-less Obstacle Avoidance
 
 Paper that uses NNs to identiry terrain:
 "D. Maturana et. al proposed an autonomous UAV landing system, where
 deep-learning is only used to classify the terrain [2]"
+
+
+
+
+
+-------------------------------------------------------------
+Ulrich2000
+
+relys on an onmican to perform topological localization.
+
+Uses histograms of the images to identify reference image.
+
+uses nearest-neighbor algorithms to match the image with a reference. Performs that on every color band separately and uses a voting system to select a result.
+Histograms of images are used for the nearest-neighbor calculation
+
+NOTES: 
+I did not think that this paper would benefit the problem I am tackeling. the main intent of the paper was to identify topological location using what is essetially suppervised learning. 
+
+

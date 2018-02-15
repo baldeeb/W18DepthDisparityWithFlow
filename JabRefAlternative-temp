@@ -34,3 +34,50 @@ Some references:
   volume =       22,
   pages =        {151--158}
 }
+
+
+
+-----------------------------------------
+CANDIDATE READINGS:
+
+@ARTICLE{
+	7829276, 
+	author=		{M. Mancini and G. Costante and P. Valigi and T. A. Ciarfuglia and J. Delmerico and D. Scaramuzza}, 
+	journal=	{IEEE Robotics and Automation Letters}, 
+	title=		{Toward Domain Independence for Learning-Based Monocular Depth Estimation}, 
+	year=		{2017}, 
+	volume=		{2}, 
+	number=		{3}, 
+	abstract={
+		Modern autonomous mobile robots require a strong understanding of their surroundings in order to safely operate in cluttered and dynamic environments. Monocular depth estimation offers a geometry-independent paradigm to detect free, navigable space with minimum space, and power consumption. These represent highly desirable features, especially for microaerial vehicles. In order to guarantee robust operation in real-world scenarios, the estimator is required to generalize well in diverse environments. Most of the existent depth estimators do not consider generalization, and only benchmark their performance on publicly available datasets after specific fine tuning. Generalization can be achieved by training on several heterogeneous datasets, but their collection and labeling is costly. In this letter, we propose a deep neural network for scene depth estimation that is trained on synthetic datasets, which allow inexpensive generation of ground truth data. We show how this approach is able to generalize well across different scenarios. In addition, we show how the addition of long short-term memory layers in the network helps to alleviate, in sequential image streams, some of the intrinsic limitations of monocular vision, such as global scale estimation, with low computational overhead. We demonstrate that the network is able to generalize well with respect to different real-world environments without any fine tuning, achieving comparable performance to state-of-the-art methods on the KITTI dataset.
+	}, 
+	pages=		{1778-1785}, 
+	doi=		{10.1109/LRA.2017.2657002}, 
+	ISSN=		{2377-3766}, 
+	month=		{July},
+}
+
+
+
+http://ieeexplore.ieee.org.proxy.lib.umich.edu/document/7138988/
+http://ieeexplore.ieee.org.proxy.lib.umich.edu/document/6248005/
+http://ieeexplore.ieee.org.proxy.lib.umich.edu/search/searchresult.jsp?queryText=V.%20Hedau,%20D.%20Hoiem,%20D.%20A.%20Forsyth,&newsearch=true
+http://ieeexplore.ieee.org.proxy.lib.umich.edu/document/7346484/references
+http://ieeexplore.ieee.org.proxy.lib.umich.edu/search/searchresult.jsp?newsearch=true&queryText=monocular%20depth%20perception%20robotics
+
+
+
+!!!!!!!!!!!!!!!!!! check references
+@ARTICLE{7346484, 
+author={F. Liu and C. Shen and G. Lin and I. Reid}, 
+journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+title={Learning Depth from Single Monocular Images Using Deep Convolutional Neural Fields}, 
+year={2016}, 
+volume={38}, 
+number={10}, 
+pages={2024-2039}, 
+abstract={In this article, we tackle the problem of depth estimation from single monocular images. Compared with depth estimation using multiple images such as stereo depth perception, depth from monocular images is much more challenging. Prior work typically focuses on exploiting geometric priors or additional sources of information, most using hand-crafted features. Recently, there is mounting evidence that features from deep convolutional neural networks (CNN) set new records for various vision applications. On the other hand, considering the continuous characteristic of the depth values, depth estimation can be naturally formulated as a continuous conditional random field (CRF) learning problem. Therefore, here we present a deep convolutional neural field model for estimating depths from single monocular images, aiming to jointly explore the capacity of deep CNN and continuous CRF. In particular, we propose a deep structured learning scheme which learns the unary and pairwise potentials of continuous CRF in a unified deep CNN framework. We then further propose an equally effective model based on fully convolutional networks and a novel superpixel pooling method, which is about 10 times faster, to speedup the patch-wise convolutions in the deep model. With this more efficient model, we are able to design deeper networks to pursue better performance. Our proposed method can be used for depth estimation of general scenes with no geometric priors nor any extra information injected. In our case, the integral of the partition function can be calculated in a closed form such that we can exactly solve the log-likelihood maximization. Moreover, solving the inference problem for predicting depths of a test image is highly efficient as closed-form solutions exist. Experiments on both indoor and outdoor scene datasets demonstrate that the proposed method outperforms state-of-the-art depth estimation approaches.}, 
+keywords={learning (artificial intelligence);neural nets;stereo image processing;CRF learning problem;closed-form solutions;continuous CRF;continuous conditional random field learning problem;deep CNN capacity;deep convolutional neural field model;deep structured learning scheme;depth estimation problem;hand-crafted features;inference problem;learning depth;log-likelihood maximization;outdoor scene datasets;partition function;patch-wise convolutions;single monocular images;stereo depth perception;superpixel pooling method;unified deep CNN framework;Approximation methods;Estimation;Labeling;Neural networks;Optimization;Semantics;Training;Depth estimation;conditional random field (CRF);deep convolutional neural networks (CNN);fully convolutional networks;superpixel pooling}, 
+doi={10.1109/TPAMI.2015.2505283}, 
+ISSN={0162-8828}, 
+month={Oct},}
