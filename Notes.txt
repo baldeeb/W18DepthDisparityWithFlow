@@ -51,3 +51,7 @@ NOTES:
 I did not think that this paper would benefit the problem I am tackeling. the main intent of the paper was to identify topological location using what is essetially suppervised learning. 
 
 
+------------------------------------------------------------
+Xiaochuan
+
+
