@@ -30,4 +30,3 @@ eyeTrans = projective2d(eye(3));
 figure;
 showMatchedFeatures(coloredIm{2, 1}, coloredIm{1, 1}, ...
     inlierpoints2, inlierpoints1);
-

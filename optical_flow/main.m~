@@ -1,0 +1,20 @@
+
+% setup global structs 
+features_s = struct( 'x', [], 'y', [], 'descriptor', {});
+
+cam_params = struct(...
+    'alpha', 0, ...  % camera angle with ground-plane
+    'beta', 45, ... % principle ray angle with ground-plane
+    'height', 1, ... % height of camera in meters
+    'V', 235, ... % Vertical image width in pixels
+    'VFOV', 6, ... % in radians
+    
+);
+
+% Match features in two consecutive images
+
+% Calculate the disparity between the two
+
+% Append to stats
+
+% hypothesize,
