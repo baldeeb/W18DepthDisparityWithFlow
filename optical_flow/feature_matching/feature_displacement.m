@@ -2,7 +2,7 @@
 %       - SVD for transform estimation
 %       - Ransac for evaluation of transform
 %   equation for transform estimation is 
-
+tic;
 dataDir = fullfile('data');
 imFileNames = {'elevator_1.png'; 'elevator_2.png'};
 
@@ -30,3 +30,5 @@ eyeTrans = projective2d(eye(3));
 figure;
 showMatchedFeatures(coloredIm{2, 1}, coloredIm{1, 1}, ...
     inlierpoints2, inlierpoints1);
+
+toc;

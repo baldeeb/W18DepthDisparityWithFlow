@@ -1,15 +1,27 @@
 
-% setup global structs 
-features_s = struct( 'x', [], 'y', [], 'descriptor', {});
 
+% Add paths
+addpath('feature_matching');
+
+
+% Declare globals
+global features_s
+global cam_params
+
+% Declare structs
+features_s = struct( 'x', [], 'y', [], ...  % 
+    'descriptor', {} ... % Sift not rotation invariant
+);
+
+% Define params
 cam_params = struct(...
     'alpha', 0, ...  % camera angle with ground-plane
-    'beta', 45, ... % principle ray angle with ground-plane
     'height', 1, ... % height of camera in meters
     'V', 235, ... % Vertical image width in pixels
-    'VFOV', 6, ... % in radians
-    
+    'VFOV', 6 ... % in radians
 );
+
+
 
 % Match features in two consecutive images
 
@@ -18,3 +30,31 @@ cam_params = struct(...
 % Append to stats
 
 % hypothesize,
+
+
+
+
+
+
+vidReader = VideoReader('approaching_dropoff.mp4');
+
+opticFlow = opticalFlowLK('NoiseThreshold',0.0009);
+prev_frameRGB = [];
+
+while hasFrame(vidReader)
+    frameRGB = readFrame(vidReader);
+    frameGray = rgb2gray(frameRGB);
+  
+    flow = estimateFlow(opticFlow,frameGray); 
+
+    imshow(zeros(size(frameRGB)))
+    hold on
+        plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
+    hold off 
+    
+    if prev_frameRGB ~= []
+        get_transform()
+    end
+    prev_frameRGB = frameRGB;
+    
+end
