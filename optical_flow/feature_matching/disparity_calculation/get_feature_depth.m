@@ -5,7 +5,7 @@ function [y, z] = get_feature_depth(f, params)
 % Returns the y distance of feature from camera, and z representing the
 % depth of a feature.
 
-% TODO: validate the sanity of the equations. 
+% TODO: UNUSED
 
 beta = arctan(((2*f.x - params.V) / params.V) * tan(params.VFOV/2));
 y = params.H / tan(params.alpha + beta);

@@ -1,4 +1,6 @@
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% BACKUP %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Add paths
 addpath('feature_matching');
@@ -29,7 +31,7 @@ features_s = struct( 'x', [], 'y', [], ...  %
 
 cam_p = struct(...
     'alpha', 0, ...  % camera angle with ground-plane
-    'H', 1, ... % height of camera in meters
+    'H', 1.5, ... % height of camera in meters
     'im_height_pxls', 1080, ... % Vertical image width in pixels
     'im_width_pxls', 1920, ... % Vertical image width in pixels
     'VFOV', 0.261799, ... % in radians
@@ -86,7 +88,6 @@ while hasFrame(vidReader)
     
     
     
-    
 % Attempting to project the points as though they were on the groundplane
 % Finding the disparity between the original and the prjection i
 % TODO: Shift the points to the camera coordinate system before
@@ -109,9 +110,9 @@ while hasFrame(vidReader)
         
         
         %%%%% Create empty room model and threashold disperity%%%%
-% %         NOTES: 
-% %           was working before 
-% %           algorithm change or param change caused this to fail
+% % %         NOTES: 
+% % %           was working before 
+% % %           algorithm change or param change caused this to fail
 
         % Find z considering points to belong to ground plane
         upscaled_r = (r_crop ./ im_scaler).*cam_p.pxl_size;
@@ -128,27 +129,7 @@ while hasFrame(vidReader)
 %         z =  z.*27;
 
         points = [r_crop, c_crop, z] ;
-
-
-
-% 
-%         upscaled_r = ((r_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%         upscaled_c = ((c_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%     
-%         points = get_pts3D([upscaled_r, upscaled_c], cam_p);
-% 
-%         figure(1000);
-%         pbaspect([1 1 1]);
-%         scatter3(points(:, 1), points(:, 2), points(:, 3));
-% 
-%         
         
-        
-        
-        
-        
-        
-
         % Propagate 3d points
         propagate = points * eye(3) + [0, 0, 1];
      
@@ -224,7 +205,7 @@ while hasFrame(vidReader)
         eps = 0.001;
         certainty_rate = 0.04;
         
-        c_hyp = imresize(hypothesis, 0.5, 'bilinear');
+        c_hyp = imresize(hypothesis, 0.05, 'bilinear');
         c_hyp(c_hyp > 0.5+eps) = 1;
         c_hyp(c_hyp < 0.5-eps) = -1;
         c_hyp(abs(c_hyp)~=1) = 0;
@@ -245,7 +226,7 @@ while hasFrame(vidReader)
         
         
         figure(123)
-        imshow(hyp)
+        imshow(imresize(hyp, 1/0.05))
         
 
     end

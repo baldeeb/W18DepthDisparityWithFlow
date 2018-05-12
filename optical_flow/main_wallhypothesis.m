@@ -13,20 +13,6 @@ features_s = struct( 'x', [], 'y', [], ...  %
     'descriptor', {} ... % Sift not rotation invariant
 );
 
-% % Define params
-% cam_p = struct(...
-%     'alpha', 0, ...  % camera angle with ground-plane
-%     'H', 1, ... % height of camera in meters
-%     'im_height_pxls', 270, ... % Vertical image width in pixels
-%     'im_width_pxls', 480, ... % Vertical image width in pixels
-%     'VFOV', 0.261799, ... % in radians  https://www.pcworld.com/article/3204445/android/google-pixel-2-features-specs-faq.html 
-%     'f', 0.027 ... % in meters
-% );
-% 
-% cam_p.VFOV = cam_p.im_height_pxls / (2*cam_p.f);
-
-
-
 cam_p = struct(...
     'alpha', 0, ...  % camera angle with ground-plane
     'H', 1, ... % height of camera in meters
@@ -57,23 +43,11 @@ while hasFrame(vidReader)
     
 %     figure(1)
 %     imshow(frameRGB)
-%     hold on
-%         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
-%     hold off 
-%     
-%     figure(2)
 %     imshow(zeros(size(frameRGB)))
 %     hold on
 %         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
 %     hold off 
-%     
-%     
-%     
-%     figure(3)
-%     conv_mags = conv2(flow.Magnitude, ones(4, 4), 'full');
-%     imshow(conv_mags./mean(mean(conv_mags)))
-%     
-    
+
     
     
     if size(prev_frameRGB) ~= 0 
@@ -98,8 +72,8 @@ while hasFrame(vidReader)
         [r, c] = find(prev_flow.Magnitude);
         
         % Filter out all points above camera height
-        c_crop = c(r > cam_p.im_height_pxls*im_scaler*0.4);
-        r_crop = r(r > cam_p.im_height_pxls*im_scaler*0.4);
+        c_crop = c(r < cam_p.im_height_pxls*im_scaler*0.6);
+        r_crop = r(r < cam_p.im_height_pxls*im_scaler*0.6);
         
         % Get linear indexces
         linearidxs = sub2ind(size(prev_flow.Magnitude), r_crop, c_crop); 
@@ -119,31 +93,9 @@ while hasFrame(vidReader)
         tan_beta = ((upscaled_r - (cam_p.im_height_pxls*cam_p.pxl_size)/2)) ./ f;
         z = cam_p.H ./ tan_beta;
         z = z.* 10e-6;
-%         % Split to segments above    
-%         z = (cam_p.H*cam_p.im_height_pxls)./ ...
-%             (((2.*(r./im_scaler)) - cam_p.im_height_pxls)*tan(cam_p.VFOV/2));
-        
-%         % Consider only values of points below im center
-%         z(r  < (cam_p.im_height_pxls*im_scaler*0.8)) = 1;
-%         z =  z.*27;
+
 
         points = [r_crop, c_crop, z] ;
-
-
-
-% 
-%         upscaled_r = ((r_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%         upscaled_c = ((c_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%     
-%         points = get_pts3D([upscaled_r, upscaled_c], cam_p);
-% 
-%         figure(1000);
-%         pbaspect([1 1 1]);
-%         scatter3(points(:, 1), points(:, 2), points(:, 3));
-% 
-%         
-        
-        
         
         
         
@@ -160,63 +112,33 @@ while hasFrame(vidReader)
 
 
         % Display the propagation of features in an empty room model
-        figure(4);
-        scatter(c_crop, -r_crop, '.');
-        hold on     
-            scatter(proj2d(:, 2), -proj2d(:, 1), '.');
-        hold off
+%         figure(4);
+%         scatter(c_crop, -r_crop, '.');
+%         hold on     
+%             scatter(proj2d(:, 2), -proj2d(:, 1), '.');
+%         hold off
         
-        expectedflow = sqrt((r_crop - proj2d(:, 1)).^2 + (c_crop - proj2d(:, 2)).^2);
-        expectedVy = (r_crop - proj2d(:, 1));
-        expectedVx = (c_crop - proj2d(:, 2));    
-
+%         expectedflow = sqrt((r_crop - proj2d(:, 1)).^2 + (c_crop - proj2d(:, 2)).^2);
+%         expectedVy = (r_crop - proj2d(:, 1));
+%         expectedVx = (c_crop - proj2d(:, 2));    
+%         
         
-        deltaflow = flow.Vy(linearidxs) - expectedVy;
-        deltaflow = deltaflow./ abs(max(max(deltaflow)));
+        expfloweps = 0.15;
+        expectedVy = 0.35;
+        
+        deltaflow = abs(flow.Vy(linearidxs)) - expectedVy;
+%         deltaflow = deltaflow./ abs(max(max(deltaflow)));
         
         hypothesis(1:size(frameGray, 1),1:size(frameGray, 2)) = 0.5;
-        hypothesis(linearidxs) = hypothesis(linearidxs) + (sign(deltaflow)*0.45);
+        hypothesis(linearidxs) = hypothesis(linearidxs) + (deltaflow*0.45);
 %         
 %         hypothesis(hypothesis>0.55) = 1;
 %         hypothesis(hypothesis<0.45) = 0;
         
-        hypothesis(1:170,:) = 0.5;
-%         figure(10);
-%         imshow(hypothesis);
+        figure(10);
+        imshow(hypothesis);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%         %%%%%%%%%%%% Substitue for room model %%%%%%%%%%%%%%%%%
-%         % Notes average of the lower pixels does not seem to be reliable.
-%        
-%         
-%         mean_Vx = flow.Vx(200:end, 100:380);
-%         mean_Vx = mean(mean_Vx(mean_Vx > 0));
-%         mean_Vy = flow.Vy(200:end, 100:380);
-%         mean_Vy = mean(mean_Vy(mean_Vy > 0));
-% 
-%         eps = 0.001;
-%         
-%         figure(4);
-% 
-%         Vy_range = 1:size(flow.Vy, 1);
-%         
-%         dispflow = flow.Vy - mean_Vy;
-%         dispflow = dispflow + abs(min(min(dispflow)));
-%         dispflow = dispflow ./ max(max(dispflow));
-%         hypothesis = dispflow;
-%         
-% %         hypothesis(1:size(frameGray, 1),1:size(frameGray, 2)) = 0.66;
-% %         hypothesis(flow.Vy==0) = 0;
-% %         hypothesis((flow.Vy < target_Vy-eps)&(flow.Vy~=0)) = 0.33;
-% %         hypothesis((flow.Vy > target_Vy+eps)&(flow.Vy~=0)) = 0.99;
-%             
-%         
-%         imshow(hypothesis);
-% %         scatter(c, -r, '.');
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
         
@@ -224,29 +146,33 @@ while hasFrame(vidReader)
         eps = 0.001;
         certainty_rate = 0.04;
         
-        c_hyp = imresize(hypothesis, 0.5, 'bilinear');
-        c_hyp(c_hyp > 0.5+eps) = 1;
-        c_hyp(c_hyp < 0.5-eps) = -1;
-        c_hyp(abs(c_hyp)~=1) = 0;
+        curr_hyp = imresize(hypothesis, 0.6, 'bilinear');
+        curr_hyp(curr_hyp > 0.5+eps) = 1;
+        curr_hyp(curr_hyp < 0.5-eps) = 0;  %-1;
+        curr_hyp(abs(curr_hyp)~=1) = 0;
         
         
         if size(hyp, 1) ~= 0
             hyp = imwarp(hyp,trans, 'FillValues', 0.5);
-            hyp = hyp(1:size(c_hyp,1),1:size(c_hyp,2));
-            hyp = hyp + c_hyp.*certainty_rate;
+            hyp = hyp(1:size(curr_hyp,1),1:size(curr_hyp,2));
+            hyp = hyp + curr_hyp.*certainty_rate;
         else
-            hyp = ones(size(c_hyp)).*0.5;
+            hyp = ones(size(curr_hyp)).*0.5;            
+            hyp = hyp(1:size(curr_hyp,1),1:size(curr_hyp,2));
+            hyp = hyp + curr_hyp.*certainty_rate;
         end
 
         if min(min(hyp)) < 0
-            hyp = hyp + abs(min(min(hyp)));            
+            disp_hyp = hyp + abs(min(min(hyp)));            
+        else 
+            disp_hyp = hyp;
         end
 %         hyp = hyp ./ max(max(hyp));
         
         
         figure(123)
-        imshow(hyp)
-        
+        imshow(disp_hyp)
+%         
 
     end
     prev_flow = flow;

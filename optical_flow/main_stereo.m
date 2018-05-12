@@ -1,52 +1,20 @@
+% NOTHING DONE HERE! 
+% NEED TO TRY AND ASSUME MOTION IS AVAILABLE AND IMPLEMENT THIS
+
+
+
 
 
 % Add paths
 addpath('feature_matching');
 
 
-% Declare globals
-global features_s
-global cam_p
-
-% Declare structs
-features_s = struct( 'x', [], 'y', [], ...  % 
-    'descriptor', {} ... % Sift not rotation invariant
-);
-
-% % Define params
-% cam_p = struct(...
-%     'alpha', 0, ...  % camera angle with ground-plane
-%     'H', 1, ... % height of camera in meters
-%     'im_height_pxls', 270, ... % Vertical image width in pixels
-%     'im_width_pxls', 480, ... % Vertical image width in pixels
-%     'VFOV', 0.261799, ... % in radians  https://www.pcworld.com/article/3204445/android/google-pixel-2-features-specs-faq.html 
-%     'f', 0.027 ... % in meters
-% );
-% 
-% cam_p.VFOV = cam_p.im_height_pxls / (2*cam_p.f);
-
-
-
-cam_p = struct(...
-    'alpha', 0, ...  % camera angle with ground-plane
-    'H', 1, ... % height of camera in meters
-    'im_height_pxls', 1080, ... % Vertical image width in pixels
-    'im_width_pxls', 1920, ... % Vertical image width in pixels
-    'VFOV', 0.261799, ... % in radians
-    'f', 27, ... % in meters
-    'pxl_size', 1.4 * 10e-6 ...   % pixel size is 1.4 µm 
-);
-im_scaler = 0.25;
 
 vidReader = VideoReader('approaching_dropoff.mp4');
 % vidReader = VideoReader('street.mp4');
 % vidReader = VideoReader('sweetwaters.mp4');
 % vidReader = VideoReader('sweetwaters_wall.mp4');
-opticFlow = opticalFlowLK('NoiseThreshold',0.009);
 
-prev_frameRGB = [];
-prev_flow = [];
-hyp = [];
 
 while hasFrame(vidReader)
     frameRGB = readFrame(vidReader);
@@ -55,43 +23,11 @@ while hasFrame(vidReader)
   
     flow = estimateFlow(opticFlow,frameGray); 
     
-%     figure(1)
-%     imshow(frameRGB)
-%     hold on
-%         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
-%     hold off 
-%     
-%     figure(2)
-%     imshow(zeros(size(frameRGB)))
-%     hold on
-%         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
-%     hold off 
-%     
-%     
-%     
-%     figure(3)
-%     conv_mags = conv2(flow.Magnitude, ones(4, 4), 'full');
-%     imshow(conv_mags./mean(mean(conv_mags)))
-%     
-    
-    
-    
     if size(prev_frameRGB) ~= 0 
         [trans, inlierpoints1, inlierpoints2] = ...
             get_transform(prev_frameRGB, frameRGB);
     end
     prev_frameRGB = frameRGB;
-    
-    
-    
-    
-    
-    
-% Attempting to project the points as though they were on the groundplane
-% Finding the disparity between the original and the prjection i
-% TODO: Shift the points to the camera coordinate system before
-% propagating.
-
     
     if size(prev_flow) ~= 0 
         % Get all points with non zero magnitude flow
@@ -109,9 +45,9 @@ while hasFrame(vidReader)
         
         
         %%%%% Create empty room model and threashold disperity%%%%
-% %         NOTES: 
-% %           was working before 
-% %           algorithm change or param change caused this to fail
+% % %         NOTES: 
+% % %           was working before 
+% % %           algorithm change or param change caused this to fail
 
         % Find z considering points to belong to ground plane
         upscaled_r = (r_crop ./ im_scaler).*cam_p.pxl_size;
@@ -128,27 +64,7 @@ while hasFrame(vidReader)
 %         z =  z.*27;
 
         points = [r_crop, c_crop, z] ;
-
-
-
-% 
-%         upscaled_r = ((r_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%         upscaled_c = ((c_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%     
-%         points = get_pts3D([upscaled_r, upscaled_c], cam_p);
-% 
-%         figure(1000);
-%         pbaspect([1 1 1]);
-%         scatter3(points(:, 1), points(:, 2), points(:, 3));
-% 
-%         
         
-        
-        
-        
-        
-        
-
         % Propagate 3d points
         propagate = points * eye(3) + [0, 0, 1];
      
@@ -224,7 +140,7 @@ while hasFrame(vidReader)
         eps = 0.001;
         certainty_rate = 0.04;
         
-        c_hyp = imresize(hypothesis, 0.5, 'bilinear');
+        c_hyp = imresize(hypothesis, 0.05, 'bilinear');
         c_hyp(c_hyp > 0.5+eps) = 1;
         c_hyp(c_hyp < 0.5-eps) = -1;
         c_hyp(abs(c_hyp)~=1) = 0;
@@ -245,7 +161,7 @@ while hasFrame(vidReader)
         
         
         figure(123)
-        imshow(hyp)
+        imshow(imresize(hyp, 1/0.05))
         
 
     end

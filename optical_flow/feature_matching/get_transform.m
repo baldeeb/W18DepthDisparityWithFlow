@@ -30,9 +30,7 @@ function [trans, inlierpoints1, inlierpoints2] = get_transform(im1,im2)
     
     
 %     % TEMP
-%     eyeTrans = projective2d(eye(3));
-% 
-%     figure;
+%     figure(99);
 %     showMatchedFeatures(coloredIm{2, 1}, coloredIm{1, 1}, ...
 %     inlierpoints2, inlierpoints1);
 end

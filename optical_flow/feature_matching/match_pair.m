@@ -1,7 +1,7 @@
 function [trans, inlierpoints1, inlierpoints2] = match_pair(siftArray)
     
 % Tuning params
-ransacPointCount = 100;  % 200;
+ransacPointCount = 1000;  % 200;
 MaxNumTrials = 5000;  % 80000;
 Confidence = 99;
 MaxDistance = 1.25;
