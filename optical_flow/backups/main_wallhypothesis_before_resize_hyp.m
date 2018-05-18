@@ -124,7 +124,7 @@ while hasFrame(vidReader)
 %         
         
         expfloweps = 0.15;
-        expectedVy = 0.3;
+        expectedVy = 0.5;  %0.35;
         
         deltaflow = abs(flow.Vy(linearidxs)) - expectedVy;
 %         deltaflow = deltaflow./ abs(max(max(deltaflow)));
@@ -141,66 +141,43 @@ while hasFrame(vidReader)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-%         %%%%%%%%%%%% Substitue for room model %%%%%%%%%%%%%%%%%
-%         % Notes average of the lower pixels does not seem to be reliable.
-%        
-%         
-%         mean_Vx = flow.Vx(200:end, 100:380);
-%         mean_Vx = mean(mean_Vx(mean_Vx > 0));
-%         mean_Vy = flow.Vy(200:end, 100:380);
-%         mean_Vy = mean(mean_Vy(mean_Vy > 0));
-% 
-%         eps = 0.001;
-%         
-%         figure(4);
-% 
-%         Vy_range = 1:size(flow.Vy, 1);
-%         
-%         dispflow = flow.Vy - mean_Vy;
-%         dispflow = dispflow + abs(min(min(dispflow)));
-%         dispflow = dispflow ./ max(max(dispflow));
-%         hypothesis = dispflow;
-%         
-% %         hypothesis(1:size(frameGray, 1),1:size(frameGray, 2)) = 0.66;
-% %         hypothesis(flow.Vy==0) = 0;
-% %         hypothesis((flow.Vy < target_Vy-eps)&(flow.Vy~=0)) = 0.33;
-% %         hypothesis((flow.Vy > target_Vy+eps)&(flow.Vy~=0)) = 0.99;
-%             
-%         
-%         imshow(hypothesis);
-% %         scatter(c, -r, '.');
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
         
         % Increase certainty       
         eps = 0.001;
         certainty_rate = 0.04;
         
-        curr_hyp = imresize(hypothesis, 0.5, 'bilinear');
+%         curr_hyp = imresize(hypothesis, 0.6, 'bilinear');
+        
+        curr_hyp  = ordfilt2(hypothesis,9,ones(3,3));
+        curr_hyp = curr_hyp(1:2:end, 1:2:end);
+        
         curr_hyp(curr_hyp > 0.5+eps) = 1;
-        curr_hyp(curr_hyp < 0.5-eps) = -1;
-        curr_hyp(abs(curr_hyp)~=1) = 0;
+        curr_hyp(curr_hyp < 0.5-eps) = -0.2;  %-1;
+        curr_hyp(abs(curr_hyp)~=1) = 0;  % 0;
         
         
         if size(hyp, 1) ~= 0
             hyp = imwarp(hyp,trans, 'FillValues', 0.5);
-            hyp = hyp(1:size(curr_hyp,1),1:size(c_hyp,2));
+            hyp = hyp(1:size(curr_hyp,1),1:size(curr_hyp,2));
             hyp = hyp + curr_hyp.*certainty_rate;
         else
-            hyp = ones(size(c_hyp)).*0.5;
+            hyp = ones(size(curr_hyp)).*0.5;            
+            hyp = hyp(1:size(curr_hyp,1),1:size(curr_hyp,2));
+            hyp = hyp + curr_hyp.*certainty_rate;
         end
+        hyp(hyp<0)= 0;
 
         if min(min(hyp)) < 0
-            hyp = hyp + abs(min(min(hyp)));            
+            disp_hyp = hyp + abs(min(min(hyp)));            
+        else 
+            disp_hyp = hyp;
         end
 %         hyp = hyp ./ max(max(hyp));
         
         
         figure(123)
-        imshow(hyp)
-%         
+        imshow(disp_hyp)
+     
 
     end
     prev_flow = flow;

@@ -26,9 +26,6 @@ function [trans, inlierpoints1, inlierpoints2] = get_transform(im1,im2)
     [trans, inlierpoints1, inlierpoints2] = match_pair(siftArray);
 
     
-    
-    
-    
 %     % TEMP
 %     figure(99);
 %     showMatchedFeatures(coloredIm{2, 1}, coloredIm{1, 1}, ...

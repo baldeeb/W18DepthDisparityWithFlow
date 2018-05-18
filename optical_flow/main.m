@@ -2,78 +2,59 @@
 
 % Add paths
 addpath('feature_matching');
+addpath('line_fitting');
 
-
-% Declare globals
-global features_s
-global cam_p
-
-% Declare structs
-features_s = struct( 'x', [], 'y', [], ...  % 
-    'descriptor', {} ... % Sift not rotation invariant
-);
-
-% % Define params
+% % Declare globals
+% global features_s
+% global cam_p
+% 
+% % Declare structs
+% features_s = struct( 'x', [], 'y', [], ...  % 
+%     'descriptor', {} ... % Sift not rotation invariant
+% );
+% 
 % cam_p = struct(...
 %     'alpha', 0, ...  % camera angle with ground-plane
 %     'H', 1, ... % height of camera in meters
-%     'im_height_pxls', 270, ... % Vertical image width in pixels
-%     'im_width_pxls', 480, ... % Vertical image width in pixels
-%     'VFOV', 0.261799, ... % in radians  https://www.pcworld.com/article/3204445/android/google-pixel-2-features-specs-faq.html 
-%     'f', 0.027 ... % in meters
+%     'im_height_pxls', 1080, ... % Vertical image width in pixels
+%     'im_width_pxls', 1920, ... % Vertical image width in pixels
+%     'VFOV', 0.261799, ... % in radians
+%     'f', 27, ... % in meters
+%     'pxl_size', 1.4 * 10e-6 ...   % pixel size is 1.4 µm 
 % );
-% 
-% cam_p.VFOV = cam_p.im_height_pxls / (2*cam_p.f);
 
 
+im_scaler = 0.2;
 
-cam_p = struct(...
-    'alpha', 0, ...  % camera angle with ground-plane
-    'H', 1, ... % height of camera in meters
-    'im_height_pxls', 1080, ... % Vertical image width in pixels
-    'im_width_pxls', 1920, ... % Vertical image width in pixels
-    'VFOV', 0.261799, ... % in radians
-    'f', 27, ... % in meters
-    'pxl_size', 1.4 * 10e-6 ...   % pixel size is 1.4 µm 
-);
-im_scaler = 0.25;
-
-vidReader = VideoReader('approaching_dropoff.mp4');
-% vidReader = VideoReader('street.mp4');
-% vidReader = VideoReader('sweetwaters.mp4');
-% vidReader = VideoReader('sweetwaters_wall.mp4');
-opticFlow = opticalFlowLK('NoiseThreshold',0.009);
+% vidReader = VideoReader('data/approaching_dropoff.mp4');
+% vidReader = VideoReader('data/street.mp4');
+% vidReader = VideoReader('data/sweetwaters.mp4');
+vidReader = VideoReader('data/sweetwaters_wall.mp4');
+opticFlow = opticalFlowLK('NoiseThreshold',0.00009);  % 0.009
 
 prev_frameRGB = [];
 prev_flow = [];
-hyp = [];
+hyp = [];prev = [];
 
 while hasFrame(vidReader)
+    tic; % timeit
+    
     frameRGB = readFrame(vidReader);
     frameRGB = imresize(frameRGB, im_scaler);
     frameGray = rgb2gray(frameRGB);
+    
+    
+    frameGray = imgaussfilt(frameGray, 3);
   
     flow = estimateFlow(opticFlow,frameGray); 
     
-%     figure(1)
+    figure(1)
 %     imshow(frameRGB)
-%     hold on
-%         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
-%     hold off 
-%     
-%     figure(2)
-%     imshow(zeros(size(frameRGB)))
-%     hold on
-%         plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
-%     hold off 
-%     
-%     
-%     
-%     figure(3)
-%     conv_mags = conv2(flow.Magnitude, ones(4, 4), 'full');
-%     imshow(conv_mags./mean(mean(conv_mags)))
-%     
-    
+    imshow(zeros(size(frameRGB)))
+    hold on
+        plot(flow,'DecimationFactor',[5 5],'ScaleFactor',10)
+    hold off 
+
     
     
     if size(prev_frameRGB) ~= 0 
@@ -94,161 +75,126 @@ while hasFrame(vidReader)
 
     
     if size(prev_flow) ~= 0 
-        % Get all points with non zero magnitude flow
-        [r, c] = find(prev_flow.Magnitude);
-        
-        % Filter out all points above camera height
-        c_crop = c(r > cam_p.im_height_pxls*im_scaler*0.4);
-        r_crop = r(r > cam_p.im_height_pxls*im_scaler*0.4);
-        
-        % Get linear indexces
-        linearidxs = sub2ind(size(prev_flow.Magnitude), r_crop, c_crop); 
-        
-        
-        
-        
-        
-        %%%%% Create empty room model and threashold disperity%%%%
-% %         NOTES: 
-% %           was working before 
-% %           algorithm change or param change caused this to fail
 
-        % Find z considering points to belong to ground plane
-        upscaled_r = (r_crop ./ im_scaler).*cam_p.pxl_size;
-        f = (cam_p.im_height_pxls*cam_p.pxl_size) ./ (tan(cam_p.VFOV/2));
-        tan_beta = ((upscaled_r - (cam_p.im_height_pxls*cam_p.pxl_size)/2)) ./ f;
-        z = cam_p.H ./ tan_beta;
-        z = z.* 10e-6;
-%         % Split to segments above    
-%         z = (cam_p.H*cam_p.im_height_pxls)./ ...
-%             (((2.*(r./im_scaler)) - cam_p.im_height_pxls)*tan(cam_p.VFOV/2));
-        
-%         % Consider only values of points below im center
-%         z(r  < (cam_p.im_height_pxls*im_scaler*0.8)) = 1;
-%         z =  z.*27;
+        % Testing the use of differentiating flow    
+        mags = flow.Magnitude;
+        mags = imgaussfilt(mags, 2);
+        mags(mags < 0.01) = NaN;
+        mags = fillmissing(mags, 'nearest');
+        % mags = imgaussfilt(mags, 1);
+        mags = medfilt2(mags, [10, 10]);
 
-        points = [r_crop, c_crop, z] ;
+        % mags = ordfilt2(mags,9,ones(3,3));
+        % mags = imgaussfilt(mags);
+        % mags = ordfilt2(mags,9,ones(7,7));
 
 
 
-% 
-%         upscaled_r = ((r_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%         upscaled_c = ((c_crop));% ./ im_scaler) ).*cam_p.pxl_size;
-%     
-%         points = get_pts3D([upscaled_r, upscaled_c], cam_p);
-% 
-%         figure(1000);
-%         pbaspect([1 1 1]);
-%         scatter3(points(:, 1), points(:, 2), points(:, 3));
-% 
-%         
-        
-        
-        
-        
-        
-        
-
-        % Propagate 3d points
-        propagate = points * eye(3) + [0, 0, 1];
-     
-        % Project 3d points onto the 2d image plane
-        proj2d = propagate(:, 1:2) ./ propagate(:,3); % disregarding f for now
-%         proj2d = cam_p.f .* propagate(:, 1:2) ./ propagate(:,3); 
-
-%         proj2d = proj2d + [cam_p.im_height_pxls*im_scaler/2, cam_p.im_width_pxls*im_scaler/2];
-
-
-        % Display the propagation of features in an empty room model
-        figure(4);
-        scatter(c_crop, -r_crop, '.');
-        hold on     
-            scatter(proj2d(:, 2), -proj2d(:, 1), '.');
-        hold off
-        
-        expectedflow = sqrt((r_crop - proj2d(:, 1)).^2 + (c_crop - proj2d(:, 2)).^2);
-        expectedVy = (r_crop - proj2d(:, 1));
-        expectedVx = (c_crop - proj2d(:, 2));    
-
-        
-        deltaflow = flow.Vy(linearidxs) - expectedVy;
-        deltaflow = deltaflow./ abs(max(max(deltaflow)));
-        
-        hypothesis(1:size(frameGray, 1),1:size(frameGray, 2)) = 0.5;
-        hypothesis(linearidxs) = hypothesis(linearidxs) + (sign(deltaflow)*0.45);
-%         
-%         hypothesis(hypothesis>0.55) = 1;
-%         hypothesis(hypothesis<0.45) = 0;
-        
-        hypothesis(1:170,:) = 0.5;
-%         figure(10);
-%         imshow(hypothesis);
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % for i = 1:50
+        %     mags = medfilt2(mags);
+        %     mags = ordfilt2(mags,9,ones(3,3));
+        % end
 
 
 
-%         %%%%%%%%%%%% Substitue for room model %%%%%%%%%%%%%%%%%
-%         % Notes average of the lower pixels does not seem to be reliable.
-%        
-%         
-%         mean_Vx = flow.Vx(200:end, 100:380);
-%         mean_Vx = mean(mean_Vx(mean_Vx > 0));
-%         mean_Vy = flow.Vy(200:end, 100:380);
-%         mean_Vy = mean(mean_Vy(mean_Vy > 0));
-% 
-%         eps = 0.001;
-%         
-%         figure(4);
-% 
-%         Vy_range = 1:size(flow.Vy, 1);
-%         
-%         dispflow = flow.Vy - mean_Vy;
-%         dispflow = dispflow + abs(min(min(dispflow)));
-%         dispflow = dispflow ./ max(max(dispflow));
-%         hypothesis = dispflow;
-%         
-% %         hypothesis(1:size(frameGray, 1),1:size(frameGray, 2)) = 0.66;
-% %         hypothesis(flow.Vy==0) = 0;
-% %         hypothesis((flow.Vy < target_Vy-eps)&(flow.Vy~=0)) = 0.33;
-% %         hypothesis((flow.Vy > target_Vy+eps)&(flow.Vy~=0)) = 0.99;
-%             
-%         
-%         imshow(hypothesis);
-% %         scatter(c, -r, '.');
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % % Fill any unavailable data
+        % for i = 1:size(mags,1)
+        %     for j = 1:size(mags,2)
+        %         n = 0;
+        %         while mags(i, j + n) == 0
+        %             if (j + n) < (size(mags, 2) - 1)
+        %                 n = n + 1;
+        %             else
+        %                 break;
+        %             end
+        %         end
+        %         while mags(i, j + n) == 0
+        %             if (j + n) > 1
+        %                 n = min(0, n - 1);
+        %             else
+        %                 break;
+        %             end
+        %         end
+        %         mags(i, j) = mags(i, j + n);
+        %     end
+        % end
+
+        % mags = conv2(mags, ones(5,5));
+        % mags = ordfilt2(mags, 5, ones(3,3));
+        % mags = ordfilt2(mags, 5, ones(3,3));
+
+        % mags = imgaussfilt(mags, 2);
+        % mags = edge(mags, 'Canny', [], 5);
+
+        % mags = ordfilt2(mags, 11*11, ones(11,11));
+        % mags = imgaussfilt(mags, 3);
+        % mags = imgaussfilt(mags, 1);
+        % mags = ordfilt2(mags, 25, ones(5,5));
+        % mags = imgaussfilt(mags, 2);
 
 
-        
-        % Increase certainty       
-        eps = 0.001;
-        certainty_rate = 0.04;
-        
-        c_hyp = imresize(hypothesis, 0.5, 'bilinear');
-        c_hyp(c_hyp > 0.5+eps) = 1;
-        c_hyp(c_hyp < 0.5-eps) = -1;
-        c_hyp(abs(c_hyp)~=1) = 0;
-        
-        
-        if size(hyp, 1) ~= 0
-            hyp = imwarp(hyp,trans, 'FillValues', 0.5);
-            hyp = hyp(1:size(c_hyp,1),1:size(c_hyp,2));
-            hyp = hyp + c_hyp.*certainty_rate;
-        else
-            hyp = ones(size(c_hyp)).*0.5;
-        end
+        % mags = edge(mags, 'Sobel', [], 'horizontal');
+        % mags = edge(mags, 'log', 0.018, 2);
+        mags = edge(mags, 'log', [], 2);
 
-        if min(min(hyp)) < 0
-            hyp = hyp + abs(min(min(hyp)));            
-        end
-%         hyp = hyp ./ max(max(hyp));
-        
-        
+
+        % dy = [-1 -1 -1; 0 0 0; 1 1 1]; % Derivative masks
+        % mags  = conv2(mags, dy, 'same');
+        % % mags = imgaussfilt(mags, 2);
+
+
+        % TODO: Work on bayesian below 
+        prev = bayesian_hyp(prev, mags, trans);
+
+
+
+
+
+        %     disp_min = min(min(mags));
+        % 
+        %     if disp_min < 0
+        %         mags = mags - disp_min;
+        %     end
+        % 
+        %     % This will allow for a clear display of the results. 
+        %     disp_max = max(max(mags));
+        %     if disp_max > 1  
+        %         mags = mags ./ disp_max;
+        %     end
+
+
+
+
         figure(123)
-        imshow(hyp)
-        
+        imshow(mags);
 
+
+
+        % %ATTEMPTING TO FIT STRAIGHT LINES TO THE EDGES. 
+        % imshow(imresize(mags, 0.5, 'nearest'));
+        % 
+        % fits = ransac_line_fitting(imresize(mags, 0.2, 'nearest'));
+        % [x, y] = find(mags); 
+        % % coeffs = polyfit(x, y, 1);
+        % 
+        % for coeffs = fits.'
+        %     % Get fitted values
+        %     fittedX = linspace(min(x), max(x), 600);
+        %     fittedY = polyval(coeffs.', fittedX);
+        %     % Plot the fitted line
+        %     hold on;
+        %     plot(fittedX, fittedY, 'r-', 'LineWidth', 3);
+        % end
+        % 
+        % 
+        
+        
+        
     end
     prev_flow = flow;
     
+    
+
+toc; % timeit
+
 end
