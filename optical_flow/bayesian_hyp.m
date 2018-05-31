@@ -2,7 +2,8 @@ function [new] = bayesian_hyp(prev, curr, trans)
     
    % Increase certainty       
     certainty_rate = 1;  %0.04;
-    decay_rate = 0.75;
+    decay_prev_rate = 0.5;
+    top_probability_limit = 10;  % 225;
 
     curr  = ordfilt2(curr,9,ones(3,3));
 
@@ -17,11 +18,13 @@ function [new] = bayesian_hyp(prev, curr, trans)
         edge_pixels = find(new);
         
         % Decay changed observations.
-        decay_pixels = setdiff(find(curr), edge_pixels);
-        new(decay_pixels) = new(decay_pixels) - decay_rate; 
-        
+        decay_pixels = setdiff(edge_pixels, find(curr));
+        new(decay_pixels) = max(new(decay_pixels) - decay_prev_rate, 0); 
+
         % Increase certainty of edges that are re-occuring.
         new = new + curr.*certainty_rate;
+        new(new > top_probability_limit) = top_probability_limit;
+        
     else
         % Initialize hypothesis.
         new = zeros(size(curr));            
@@ -43,37 +46,3 @@ function [new] = bayesian_hyp(prev, curr, trans)
     figure(333)
     imshow(ordfilt2(disp_hyp, 25, ones(5, 5)))
 end
-
-
-
-function [result] =  edge2type(edge_im, flow_im)
-% The passed image is one with ones where there is an expected edge.
-
-    % Find all edges
-    [edge_pixels] = find(edge_im);
-    
-    % Build mask to convolve
-    mask = ...
-    [...
-         1  1  1  1; ...
-         1  1  1  1; ...
-         1  1  1  1; ...
-         1  1  1  1; ...
-         0  0  0  0; ...
-        -1 -1 -1 -1; ...
-        -1 -1 -1 -1; ...
-        -1 -1 -1 -1; ...
-        -1 -1 -1 -1  ...
-    ];
-
-    conv_im = conv2(flow_im, mask);
-end
-% find all non zero values. 
-
-% Convolve a rectangle over the full image. The rectangle has to be
-% positive form below and negative from above 
-
-% find the values at the edges found earlier. 
-
-% if positive and greater than a threshold or lower than the negative of
-% that threshold then it is either a drop or an overhang.

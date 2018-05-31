@@ -1,8 +1,8 @@
 function [trans, inlierpoints1, inlierpoints2] = match_pair(siftArray)
     
 % Tuning params
-ransacPointCount = 1000;  % 200;
-MaxNumTrials = 5000;  % 80000;
+ransacPointCount = 100;  % 200;
+MaxNumTrials = 1000;  % 80000;
 Confidence = 99;
 MaxDistance = 1.25;
 
@@ -23,7 +23,7 @@ select_coords2 = uint16([colf2(selected_sift2), rowf2(selected_sift2)]);
 [trans, inlierpoints1, inlierpoints2] = estimateGeometricTransform(...
     select_coords1(1:ransacPointCount, :), ...
     select_coords2(1:ransacPointCount, :), ...
-    'similarity', ... 'projective', ...   
+    'similarity', ... 'projective', ...   similarity
     'MaxNumTrials', MaxNumTrials, ...
     'Confidence', Confidence, ...
     'MaxDistance', MaxDistance);

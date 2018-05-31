@@ -38,10 +38,10 @@ cam_p = struct(...
 );
 im_scaler = 0.25;
 
-vidReader = VideoReader('approaching_dropoff.mp4');
-% vidReader = VideoReader('street.mp4');
-% vidReader = VideoReader('sweetwaters.mp4');
-% vidReader = VideoReader('sweetwaters_wall.mp4');
+vidReader = VideoReader('data/approaching_dropoff.mp4');
+% vidReader = VideoReader('data/street.mp4');
+% vidReader = VideoReader('data/sweetwaters.mp4');
+% vidReader = VideoReader('data/sweetwaters_wall.mp4');
 opticFlow = opticalFlowLK('NoiseThreshold',0.009);
 
 prev_frameRGB = [];
@@ -159,13 +159,13 @@ while hasFrame(vidReader)
 %         proj2d = proj2d + [cam_p.im_height_pxls*im_scaler/2, cam_p.im_width_pxls*im_scaler/2];
 
 
-        % Display the propagation of features in an empty room model
-        figure(4);
-        scatter(c_crop, -r_crop, '.');
-        hold on     
-            scatter(proj2d(:, 2), -proj2d(:, 1), '.');
-        hold off
-        
+%         % Display the propagation of features in an empty room model
+%         figure(4);
+%         scatter(c_crop, -r_crop, '.');
+%         hold on     
+%             scatter(proj2d(:, 2), -proj2d(:, 1), '.');
+%         hold off
+%         
         expectedflow = sqrt((r_crop - proj2d(:, 1)).^2 + (c_crop - proj2d(:, 2)).^2);
         expectedVy = (r_crop - proj2d(:, 1));
         expectedVx = (c_crop - proj2d(:, 2));    
@@ -181,8 +181,8 @@ while hasFrame(vidReader)
 %         hypothesis(hypothesis<0.45) = 0;
         
         hypothesis(1:170,:) = 0.5;
-%         figure(10);
-%         imshow(hypothesis);
+        figure(10);
+        imshow(hypothesis);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

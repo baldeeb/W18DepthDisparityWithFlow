@@ -18,15 +18,18 @@ function [trans, inlierpoints1, inlierpoints2] = get_transform(im1,im2)
     coloredIm{2, 1} = im2;
 
     % Get sift features 
+%     disp("Getting sift features: "); tic;
     siftArray = get_array_sifts(coloredIm);
-
+%     toc
+    
     % Match pair of images using estimateGeometricTransform
     %   -> uses SVD & MSAC to choose a best transform
     % Get tansform and inliers of each sift set
+%     disp("Getting Transform: "); tic;
     [trans, inlierpoints1, inlierpoints2] = match_pair(siftArray);
-
+%     toc
     
-%     % TEMP
+% %     TEMP
 %     figure(99);
 %     showMatchedFeatures(coloredIm{2, 1}, coloredIm{1, 1}, ...
 %     inlierpoints2, inlierpoints1);

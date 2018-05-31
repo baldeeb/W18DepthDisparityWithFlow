@@ -24,7 +24,7 @@ else
 end
 
 
-fprintf('Running find_sift\n');
+% fprintf('Running find_sift\n');
 
 % parameters (default SIFT size)
 num_angles = 8;
